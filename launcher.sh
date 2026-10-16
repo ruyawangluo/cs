@@ -1,6 +1,7 @@
 #!/bin/bash
 # 启动脚本 - 智能版
 # 支持用户输入各种格式，自动提取脚本地址
+# 支持两种模式：下载并执行 / 仅下载到目录
 
 echo "=============================="
 echo "  私有仓库脚本远程执行工具"
@@ -9,6 +10,13 @@ echo ""
 
 # 输入 GitHub Token
 read -s -p "请输入 GitHub Token: " TOKEN
+echo ""
+
+# 选择模式
+echo "请选择模式："
+echo "  1. 下载并执行"
+echo "  2. 仅下载到目录（不执行）"
+read -p "请输入序号 [1]: " MODE
 echo ""
 
 # 输入脚本地址（支持多种格式）
@@ -55,7 +63,31 @@ fi
 echo "已识别脚本地址："
 echo "  ${SCRIPT_URL}"
 echo ""
-echo "正在获取并执行脚本..."
-echo ""
 
-curl -s -H "Authorization: token ${TOKEN}" "${SCRIPT_URL}" | bash
+if [ "$MODE" = "2" ]; then
+    # 仅下载到目录
+    DEFAULT_DIR="$(pwd)"
+    read -p "请输入保存目录 [${DEFAULT_DIR}]: " DEST_DIR
+    DEST_DIR="${DEST_DIR:-$DEFAULT_DIR}"
+
+    if ! mkdir -p "$DEST_DIR"; then
+        echo "错误：无法创建目录 ${DEST_DIR}"
+        exit 1
+    fi
+
+    DEST_FILE="${DEST_DIR%/}/$(basename "${SCRIPT_URL}")"
+
+    echo ""
+    echo "正在下载到：${DEST_FILE}"
+    if curl -fsS -H "Authorization: token ${TOKEN}" "${SCRIPT_URL}" -o "${DEST_FILE}"; then
+        echo "下载完成：${DEST_FILE}"
+    else
+        rm -f "${DEST_FILE}"
+        echo "错误：下载失败"
+        exit 1
+    fi
+else
+    echo "正在获取并执行脚本..."
+    echo ""
+    curl -s -H "Authorization: token ${TOKEN}" "${SCRIPT_URL}" | bash
+fi
