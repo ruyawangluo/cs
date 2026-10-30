@@ -9,7 +9,7 @@
 | launcher.sh | 私有仓库脚本远程执行入口 |
 | fix-net.sh | DD 重装后重建网卡配置 |
 | get_systemKey.sh | 从 /opt/vpsm/config.yaml 读取 systemKey |
-| install-speedtest-cli.sh | 安装 Ookla Speedtest CLI 测速工具（自动识别发行版） |
+| install-speedtest-cli.sh | 安装 Ookla Speedtest CLI 测速工具（跨发行版，自动识别架构） |
 
 ## 远程执行
 
