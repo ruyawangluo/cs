@@ -50,6 +50,8 @@ cleanup_conflicts() {
   # bintray 时代的旧源
   rm -f /etc/apt/sources.list.d/speedtest.list 2>/dev/null || true
   rm -f /etc/yum.repos.d/bintray-ookla-rhel.repo 2>/dev/null || true
+  # 残留的 ookla 源（重跑时先清掉，避免坏源导致 update 失败）
+  rm -f /etc/apt/sources.list.d/ookla_speedtest-cli*.list 2>/dev/null || true
   # 非官方 Python 版 speedtest-cli
   apt-get remove -y speedtest-cli >/dev/null 2>&1 || true
   yum remove -y speedtest-cli >/dev/null 2>&1 || true
@@ -59,8 +61,8 @@ cleanup_conflicts() {
 install_deb() {
   info "检测到 Debian/Ubuntu 系，使用 apt + packagecloud 源安装。"
 
-  # 先确保 curl 存在（官方流程）
-  apt-get update -y >/dev/null
+  # 先确保 curl 存在（官方流程）；update 失败不阻断（可能有其它坏源）
+  apt-get update -y >/dev/null || true
   apt-get install -y curl gnupg >/dev/null
 
   # 添加官方源
