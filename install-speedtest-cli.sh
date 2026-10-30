@@ -66,13 +66,14 @@ install_deb() {
   # 添加官方源
   curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | bash
 
-  # Ubuntu 24.04 (noble) 兼容处理：官方源暂无 noble 包，改用 jammy
-  if [[ "$OS_ID" == "ubuntu" && "$OS_CODENAME" == "noble" ]]; then
-    warn "检测到 Ubuntu 24.04 (noble)，官方源暂无该版本包，自动改用 jammy 源。"
-    local list_file="/etc/apt/sources.list.d/ookla_speedtest-cli.list"
-    if [[ -f "$list_file" ]]; then
-      sed -i 's/noble/jammy/g' "$list_file"
-    fi
+  # Ubuntu 新版本兼容处理：官方源仅支持到 jammy（22.04），
+  # noble(24.04)、resolute(26.04) 等更新版本统一改用 jammy 源。
+  local supported_codenames="trusty xenial bionic focal jammy"
+  if [[ "$OS_ID" == "ubuntu" && -n "$OS_CODENAME" && " $supported_codenames " != *" $OS_CODENAME "* ]]; then
+    warn "检测到 Ubuntu ($OS_CODENAME)，官方源暂无该版本包，自动改用 jammy 源。"
+    grep -rl "$OS_CODENAME" /etc/apt/sources.list.d/ 2>/dev/null | while IFS= read -r f; do
+      sed -i "s/$OS_CODENAME/jammy/g" "$f"
+    done || true
   fi
 
   apt-get update -y >/dev/null
